@@ -1,0 +1,7 @@
+type: mltable
+paths:
+  - file: ./diabetes.csv
+transformations:
+  - read_delimited:
+      delimiter: ','
+      header: all_files_same_headers

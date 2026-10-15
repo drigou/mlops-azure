@@ -1,0 +1,20 @@
+[project]
+name = "mlops-azure"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "azure-ai-ml>=1.35.1",
+    "azureml-mlflow>=1.60.0",
+    "dotenv>=0.9.9",
+    "ipykernel>=7.4.0",
+    "mlflow>=3.16.1",
+    "mltable>=1.7.0",
+    "pandas>=3.0.6",
+    "scikit-learn>=1.9.1",
+    "xgboost>=3.4.1",
+]
+
+[tool.uv]
+required-environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
