@@ -2,7 +2,7 @@ $schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.jso
 name: preprocessing
 display_name: Preprocess data
 description: Splits diabetes data into train/validation sets and scales the features.
-version: 1
+version: 2
 type: command
 inputs:
   input_data:

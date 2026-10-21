@@ -1,0 +1,39 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+name: training
+display_name: Train XGBoost model
+description: Trains an XGBoost classifier on the training set and evaluates it on the validation set.
+version: 2
+type: command
+inputs:
+  training_data:
+    type: uri_folder
+  validation_data:
+    type: uri_folder
+  n_estimators:
+    type: integer
+    default: 100
+    min: 1
+  max_depth:
+    type: integer
+    default: 6
+    min: 1
+  learning_rate:
+    type: number
+    default: 0.3
+    min: 0.0001
+    max: 1
+outputs:
+  model_output:
+    type: mlflow_model
+code: ./code
+environment:
+  image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu22.04:latest
+  conda_file: ./environments/training-conda.yml
+command: >-
+  python training.py
+  --training_data ${{inputs.training_data}}
+  --validation_data ${{inputs.validation_data}}
+  --n_estimators ${{inputs.n_estimators}}
+  --max_depth ${{inputs.max_depth}}
+  --learning_rate ${{inputs.learning_rate}}
+  --model_output ${{outputs.model_output}}
