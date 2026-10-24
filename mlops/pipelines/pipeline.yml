@@ -1,110 +1,39 @@
-display_name: pipeline_function_name
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+display_name: diabetes-pipeline
 inputs:
   pipeline_job_input:
-    path: azureml:diabetes-csv:1
     type: uri_file
-jobs:
-  preprocessing:
-    component:
-      $schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
-      code: azureml:/subscriptions/e46b15c2-60e4-419f-a352-ee019a3b0daf/resourceGroups/rg-az-ml/providers/Microsoft.MachineLearningServices/workspaces/mlw-az-ml/codes/9f343b26-c5cf-4d75-819d-1b966bd8d09a/versions/1
-      command: python preprocessing.py --input_data ${{inputs.input_data}} --valid_size
-        ${{inputs.valid_size}} --scaler ${{inputs.scaler}} --training_data ${{outputs.training_data}}
-        --validation_data ${{outputs.validation_data}}
-      description: Splits diabetes data into train/validation sets and scales the
-        features.
-      display_name: Preprocess data
-      environment: azureml://registries/azureml/environments/sklearn-1.5/labels/latest
-      id: /subscriptions/e46b15c2-60e4-419f-a352-ee019a3b0daf/resourceGroups/rg-az-ml/providers/Microsoft.MachineLearningServices/workspaces/mlw-az-ml/components/azureml_anonymous/versions/cfaf3fbb-d1ee-468b-bba1-ff2fa64939e2
-      inputs:
-        input_data:
-          type: uri_file
-        scaler:
-          default: standard
-          enum:
-          - standard
-          - robust
-          - minmax
-          type: string
-        valid_size:
-          default: '0.3'
-          max: '0.99'
-          min: '0.01'
-          type: number
-      is_deterministic: true
-      name: preprocessing
-      outputs:
-        training_data:
-          type: uri_folder
-        validation_data:
-          type: uri_folder
-      type: command
-      version: '2'
-    inputs:
-      input_data:
-        path: ${{parent.inputs.pipeline_job_input}}
-    outputs:
-      training_data: ${{parent.outputs.pipeline_job_training_data}}
-      validation_data: ${{parent.outputs.pipeline_job_validation_data}}
-    type: command
-  training:
-    component:
-      $schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
-      code: azureml:/subscriptions/e46b15c2-60e4-419f-a352-ee019a3b0daf/resourceGroups/rg-az-ml/providers/Microsoft.MachineLearningServices/workspaces/mlw-az-ml/codes/9f343b26-c5cf-4d75-819d-1b966bd8d09a/versions/1
-      command: python training.py --training_data ${{inputs.training_data}} --validation_data
-        ${{inputs.validation_data}} --n_estimators ${{inputs.n_estimators}} --max_depth
-        ${{inputs.max_depth}} --learning_rate ${{inputs.learning_rate}} --model_output
-        ${{outputs.model_output}}
-      description: Trains an XGBoost classifier on the training set and evaluates
-        it on the validation set.
-      display_name: Train XGBoost model
-      environment: azureml:/subscriptions/e46b15c2-60e4-419f-a352-ee019a3b0daf/resourceGroups/rg-az-ml/providers/Microsoft.MachineLearningServices/workspaces/mlw-az-ml/environments/CliV2AnonymousEnvironment/versions/245055fd93bf9dd465680bd3cac5296ecb250168b580cb18afc9fd37e8e3e275
-      inputs:
-        learning_rate:
-          default: '0.3'
-          max: '1.0'
-          min: '0.0001'
-          type: number
-        max_depth:
-          default: '6'
-          min: '1'
-          type: integer
-        n_estimators:
-          default: '100'
-          min: '1'
-          type: integer
-        training_data:
-          type: uri_folder
-        validation_data:
-          type: uri_folder
-      is_deterministic: true
-      name: training
-      outputs:
-        model_output:
-          type: mlflow_model
-      type: command
-      version: '2'
-    inputs:
-      learning_rate: 0.3
-      max_depth: 3
-      n_estimators: 100
-      training_data:
-        path: ${{parent.jobs.preprocessing.outputs.training_data}}
-      validation_data:
-        path: ${{parent.jobs.preprocessing.outputs.validation_data}}
-    outputs:
-      model_output: ${{parent.outputs.pipeline_job_trained_model}}
-    type: command
+    path: azureml:diabetes-csv:1
 outputs:
   pipeline_job_trained_model:
     type: mlflow_model
   pipeline_job_training_data:
-    mode: upload
     type: uri_folder
+    mode: upload
   pipeline_job_validation_data:
-    mode: upload
     type: uri_folder
+    mode: upload
 settings:
   default_compute: azureml:cpu-training-cluster
   default_datastore: azureml:workspaceblobstore
-type: pipeline
+jobs:
+  preprocessing:
+    type: command
+    component: ./components/preprocessing.yml
+    inputs:
+      input_data: ${{parent.inputs.pipeline_job_input}}
+    outputs:
+      training_data: ${{parent.outputs.pipeline_job_training_data}}
+      validation_data: ${{parent.outputs.pipeline_job_validation_data}}
+  training:
+    type: command
+    component: ./components/training.yml
+    inputs:
+      training_data: ${{parent.jobs.preprocessing.outputs.training_data}}
+      validation_data: ${{parent.jobs.preprocessing.outputs.validation_data}}
+      n_estimators: 100
+      max_depth: 3
+      learning_rate: 0.3
+    outputs:
+      model_output: ${{parent.outputs.pipeline_job_trained_model}}
