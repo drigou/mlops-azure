@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "azure-ai-ml>=1.35.1",
+    "azure-ai-projects>=2.10.0",
     "azureml-mlflow>=1.60.0",
     "dotenv>=0.9.9",
     "ipykernel>=7.4.0",

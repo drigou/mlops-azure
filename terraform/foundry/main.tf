@@ -44,6 +44,7 @@ resource "azurerm_cognitive_account" "foundry-dg" {
   }
 }
 
+# A Foundry project is a logical container for deployments and agents. It is created under a Foundry resource.
 resource "azurerm_cognitive_account_project" "proj-dg-foundry" {
   name                 = "proj-dg-foundry"
   cognitive_account_id = azurerm_cognitive_account.foundry-dg.id
@@ -51,5 +52,21 @@ resource "azurerm_cognitive_account_project" "proj-dg-foundry" {
 
   identity {
     type = "SystemAssigned"
+  }
+}
+
+# Deployments fall under the Foundry resource, and are used to host models for inference.
+resource "azurerm_cognitive_deployment" "gpt5mini" {
+  name                 = "gpt-5-mini"
+  cognitive_account_id = azurerm_cognitive_account.foundry-dg.id
+
+  model {
+    format = "OpenAI"
+    name   = "gpt-5-mini"
+  }
+
+  sku {
+    name     = "GlobalStandard"   # or "DataZoneStandard" for EU processing
+    capacity = 10
   }
 }
